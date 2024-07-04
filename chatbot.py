@@ -19,12 +19,12 @@ nltk.download('wordnet')
 lemmatizer = WordNetLemmatizer()
 stop_words = set(stopwords.words('english'))
 
-# Load the vectorizer and retrieval data
+# Load the vectorizer and retrieval data. Input the respectful path
 vectorizer = joblib.load('C:\\Users\\Eric\\Desktop\\chatbot\\models\\vectorizer.pkl')
 questions, answers = joblib.load('C:\\Users\\Eric\\Desktop\\chatbot\\models\\qa_data.pkl')
 X = vectorizer.fit_transform(questions)
 
-# Load the generative model
+# Load the generative model. Input the respectful path
 model_path = 'C:\\Users\\Eric\\Desktop\\chatbot\\models\\generative_model.pth'
 model = GPT2LMHeadModel.from_pretrained('gpt2')
 tokenizer = GPT2Tokenizer.from_pretrained('gpt2')
