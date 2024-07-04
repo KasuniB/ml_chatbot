@@ -66,3 +66,49 @@ def get_retrieval_response(query):
         return "I couldn't find a specific answer to that question.", "I'm sorry, but I don't have enough information to provide a reliable answer."
     
     return question, answer
+def get_retrieval_confidence(query):
+    query_vec = vectorizer.transform([query])
+    similarities = cosine_similarity(query_vec, X).flatten()
+    return similarities.max()
+
+def generate_response(query, context=None):
+    if context:
+        prompt = f"Context: {context}\nQuestion: {query}\nAnswer:"
+    else:
+        prompt = f"Question: {query}\nAnswer:"
+    
+    inputs = tokenizer.encode(prompt, return_tensors='pt')
+    
+    with suppress_stdout():
+        outputs = model.generate(inputs, max_length=1000, num_return_sequences=1, no_repeat_ngram_size=2)
+    
+    response = tokenizer.decode(outputs[0], skip_special_tokens=True)
+    return response.split("Answer:")[-1].strip()
+
+def ask_for_clarification(query):
+    print(f"I'm not sure I fully understand. Can you provide more context about '{query}'?")
+    return input("Your clarification (or press Enter to skip): ")
+
+def get_response(query):
+    preprocessed_query = preprocess_query(query)
+    retrieval_confidence = get_retrieval_confidence(preprocessed_query)
+    #print(f"Retrieval confidence: {retrieval_confidence}")
+
+    if retrieval_confidence > 0.8:
+        question, response = get_retrieval_response(preprocessed_query)
+        #print(f"Retrieved question: {question}")
+        print(f"Response: {response}")
+        return response
+    else:
+        question, retrieved_response = get_retrieval_response(preprocessed_query)
+        generated_response = generate_response(query, context=retrieved_response)
+        print(f"Response: {generated_response}")
+        return generated_response
+    
+# Example usages
+while True:
+    query = input("Enter your medical question (or 'quit' to exit): ")
+    if query.lower() == 'quit':
+        break
+    response = get_response(query)
+    #print(f"Final response: {response}\n")
